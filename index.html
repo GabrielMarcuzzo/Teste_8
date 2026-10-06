@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Controle Financeiro MEI (MVP)</title>
+
+  <style>
+    /* =========================================================
+      Mobile-First | Layout limpo e didático
+      ========================================================= */
+
+    :root{
+      --bg: #0b1220;
+      --card: rgba(255,255,255,0.06);
+      --card-2: rgba(255,255,255,0.09);
+      --text: #eaf0ff;
+      --muted: rgba(234,240,255,0.72);
+      --border: rgba(255,255,255,0.14);
+
+      --primary: #6ea8fe;
+      --danger: #ff6b6b;
+      --success: #39d98a;
+      --warning: #ffd166;
+
+      --shadow: 0 10px 25px rgba(0,0,0,0.35);
+      --radius: 14px;
+      --radius-sm: 10px;
+
+      --focus: 0 0 0 3px rgba(110,168,254,0.35);
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif;
+      background: radial-gradient(900px 600px at 20% -10%, rgba(110,168,254,0.35), transparent 60%),
+                  radial-gradient(800px 520px at 100% 0%, rgba(57,217,138,0.25), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.35;
+      padding: 16px;
+    }
+
+    /* Centraliza em desktop, mantendo mobile-first */
+    .container{
+      width: 100%;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    header{
+      padding: 14px 4px 18px;
+      text-align: center;
+    }
+
+    header h1{
+      margin: 6px 0 0;
+      font-size: 1.35rem;
+      letter-spacing: 0.2px;
+    }
+
+    header p{
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    /* =========================================================
+      Cards e Grids
+      ========================================================= */
+    .grid-cards{
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+      margin-bottom: 18px;
+      grid-template-columns: 1fr; /* mobile */
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    .card h2{
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .metric{
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .metric .value{
+      font-size: 1.65rem;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    .badge{
+      border: 1px solid var(--border);
+      background: var(--card-2);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* =========================================================
+      Seções do formulário e histórico
+      ========================================================= */
+    .layout{
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr; /* mobile */
+    }
+
+    .section-title{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .section-title h3{
+      margin: 0;
+      font-size: 1.02rem;
+      font-weight: 800;
+    }
+
+    .section-title span{
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    form{
+      display: grid;
+      gap: 12px;
+    }
+
+    .row{
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr;
+    }
+
+    label{
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.93rem;
+      font-weight: 650;
+    }
+
+    input, select{
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      outline: none;
+      font-size: 1rem;
+    }
+
+    input:focus, select:focus{
+      box-shadow: var(--focus);
+      border-color: rgba(110,168,254,0.6);
+    }
+
+    input::placeholder{ color: rgba(234,240,255,0.45); }
+
+    .form-actions{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 0.98rem;
+      cursor: pointer;
+      transition: transform 0.05s ease, background 0.15s ease;
+      user-select: none;
+    }
+    button:active{ transform: translateY(1px); }
+
+    .btn-primary{
+      background: rgba(110,168,254,0.18);
+      border-color: rgba(110,168,254,0.35);
+    }
+
+    .btn-primary:hover{
+      background: rgba(110,168,254,0.25);
+    }
+
+    .btn-danger{
+      background: rgba(255,107,107,0.14);
+      border-color: rgba(255,107,107,0.32);
+    }
+    .btn-danger:hover{
+      background: rgba(255,107,107,0.2);
+    }
+
+    .btn-ghost{
+      background: transparent;
+    }
+
+    .table-wrap{
+      overflow-x: auto;
+    }
+
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 520px; /* permite scroll em telas pequenas */
+    }
+
+    th, td{
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 0.95rem;
+    }
+
+    th{
+      color: var(--muted);
+      font-weight: 800;
+      position: sticky;
+      top: 0;
+      background: rgba(11,18,32,0.85);
+      backdrop-filter: blur(6px);
+      z-index: 1;
+    }
+
+    .pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      font-weight: 750;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    .dot{
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .pill.receita .dot{ background: var(--success); }
+    .pill.despesa .dot{ background: var(--danger); }
+
+    .money{
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .empty{
+      padding: 14px;
+      border: 1px dashed rgba(255,255,255,0.22);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+    }
+
+    /* =========================================================
+      Responsividade (a partir de ~700px)
+      ========================================================= */
+    @media (min-width: 700px){
+      .grid-cards{
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .layout{
+        grid-template-columns: 1.05fr 1fr;
+        align-items: start;
+      }
+      header h1{ font-size: 1.6rem; }
+      .row{
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- =========================================================
+      Cabeçalho
+      ========================================================= -->
+    <header>
+      <h1>Controle Financeiro MEI</h1>
+      <p>Cadastre receitas e despesas, acompanhe o saldo e exporte em CSV. ✅</p>
+    </header>
+
+    <!-- =========================================================
+      Painel de Resumos (3 cards)
+      ========================================================= -->
+    <section class="grid-cards" aria-label="Resumo financeiro">
+      <div class="card">
+        <h2>Total de Receitas</h2>
+        <div class="metric">
+          <div class="value" id="sumReceitas">R$ 0,00</div>
+          <div class="badge" id="countReceitas">0 lançamentos</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Total de Despesas</h2>
+        <div class="metric">
+          <div class="value" id="sumDespesas">R$ 0,00</div>
+          <div class="badge" id="countDespesas">0 lançamentos</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Saldo Líquido</h2>
+        <div class="metric">
+          <div class="value" id="sumSaldo">R$ 0,00</div>
+          <div class="badge" id="saldoBadge">Neutro</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+      Layout: Formulário + Histórico
+      ========================================================= -->
+    <main class="layout">
+      <!-- =========================
+        Formulário de lançamento
+        ========================= -->
+      <section class="card" aria-label="Cadastro de lançamentos">
+        <div class="section-title">
+          <h3>Novo lançamento</h3>
+          <span>salvo no seu navegador</span>
+        </div>
+
+        <form id="formLancamento" autocomplete="off">
+          <!-- Descrição -->
+          <label>
+            Descrição
+            <input
+              id="desc"
+              name="desc"
+              type="text"
+              placeholder="Ex.: Serviços prestados"
+              required
+              maxlength="80"
+            />
+          </label>
+
+          <div class="row">
+            <!-- Valor -->
+            <label>
+              Valor (R$)
+              <input
+                id="valor"
+                name="valor"
+                type="number"
+                inputmode="decimal"
+                step="0.01"
+                min="0"
+                placeholder="0,00"
+                required
+              />
+            </label>
+
+            <!-- Categoria -->
+            <label>
+              Categoria
+              <select id="categoria" name="categoria" required>
+                <option value="receita">Receita</option>
+                <option value="despesa">Despesa</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="row">
+            <!-- Data (auto hoje) -->
+            <label>
+              Data
+              <input id="data" name="data" type="date" required />
+            </label>
+
+            <!-- Ações do formulário -->
+            <div style="display:flex; align-items:flex-end;">
+              <div class="form-actions" style="width:100%;">
+                <button class="btn-primary" type="submit">➕ Adicionar</button>
+                <button class="btn-ghost" id="btnExportar" type="button">⬇️ Exportar CSV</button>
+              </div>
+            </div>
+          </div>
+
+          <p id="formMsg" class="empty" style="display:none; margin:0; border-style: solid; border-color: rgba(110,168,254,0.28);">
+            Mensagem
+          </p>
+        </form>
+
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-danger" id="btnLimpar" type="button">🧹 Limpar tudo</button>
+        </div>
+      </section>
+
+      <!-- =========================
+        Histórico de lançamentos
+        ========================= -->
+      <section class="card" aria-label="Histórico de lançamentos">
+        <div class="section-title">
+          <h3>Histórico</h3>
+          <span id="totalItens">0 itens</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:110px;">Data</th>
+                <th>Descrição</th>
+                <th style="width:120px;">Tipo</th>
+                <th style="width:150px;">Categoria</th>
+                <th style="width:160px;">Valor</th>
+                <th style="width:90px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyLancamentos">
+              <!-- preenchido pelo JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="emptyState" class="empty" style="margin-top:12px;">
+          Nenhum lançamento ainda. Adicione ao lado ✨
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    /* =========================================================
+      MVP MEI Financeiro (sem libs)
+      - localStorage para persistência
+      - tabela ordenada por data (desc) e id (desc)
+      - exportação CSV
+      ========================================================= */
+
+    // -------------------------
+    // Configurações
+    // -------------------------
+    const STORAGE_KEY = "mei_financas_mvp_lancamentos_v1";
+
+    // -------------------------
+    // Utilidades
+    // -------------------------
+    function hojeISO(){
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    }
+
+    function formatBRL(valor){
+      // valor numérico -> moeda pt-BR
+      const nf = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+      return nf.format(Number(valor) || 0);
+    }
+
+    function parseValorInput(inputValue){
+      // input type=number já vem como string numérica
+      // Só garantimos que vira número
+      const v = Number(inputValue);
+      return Number.isFinite(v) ? v : 0;
+    }
+
+    function uid(){
+      return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+    }
+
+    function getLancamentos(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return [];
+      try{
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      }catch{
+        return [];
+      }
+    }
+
+    function setLancamentos(arr){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    }
+
+    function salvarERecalcular(){
+      renderResumo();
+      renderTabela();
+    }
+
+    function compareByDateDesc(a, b){
+      // Data: "YYYY-MM-DD"
+      // Ordenar por data desc e depois por id desc (aprox.)
+      if(a.data === b.data){
+        return (b.id > a.id) ? 1 : (b.id < a.id ? -1 : 0);
+      }
+      return a.data < b.data ? 1 : -1; // desc
+    }
+
+    // -------------------------
+    // Referências DOM
+    // -------------------------
+    const form = document.getElementById("formLancamento");
+    const descEl = document.getElementById("desc");
+    const valorEl = document.getElementById("valor");
+    const categoriaEl = document.getElementById("categoria");
+    const dataEl = document.getElementById("data");
+
+    const tbody = document.getElementById("tbodyLancamentos");
+    const emptyState = document.getElementById("emptyState");
+    const totalItens = document.getElementById("totalItens");
+
+    const sumReceitasEl = document.getElementById("sumReceitas");
+    const sumDespesasEl = document.getElementById("sumDespesas");
+    const sumSaldoEl = document.getElementById("sumSaldo");
+    const saldoBadgeEl = document.getElementById("saldoBadge");
+
+    const countReceitasEl = document.getElementById("countReceitas");
+    const countDespesasEl = document.getElementById("countDespesas");
+
+    const formMsg = document.getElementById("formMsg");
+
+    const btnExportar = document.getElementById("btnExportar");
+    const btnLimpar = document.getElementById("btnLimpar");
+
+    // -------------------------
+    // Estado em memória
+    // -------------------------
+    let lancamentos = getLancamentos();
+
+    // -------------------------
+    // Renderizações
+    // -------------------------
+    function renderResumo(){
+      const receitas = lancamentos.filter(l => l.categoria === "receita");
+      const despesas = lancamentos.filter(l => l.categoria === "despesa");
+
+      const totalReceitas = receitas.reduce((acc, l) => acc + l.valor, 0);
+      const totalDespesas = despesas.reduce((acc, l) => acc + l.valor, 0);
+      const saldo = totalReceitas - totalDespesas;
+
+      sumReceitasEl.textContent = formatBRL(totalReceitas);
+      sumDespesasEl.textContent = formatBRL(totalDespesas);
+      sumSaldoEl.textContent = formatBRL(saldo);
+
+      countReceitasEl.textContent = `${receitas.length} lançamento(s)`;
+      countDespesasEl.textContent = `${despesas.length} lançamento(s)`;
+
+      // Cor dinâmica do saldo
+      if(saldo > 0){
+        sumSaldoEl.style.color = "var(--success)";
+        saldoBadgeEl.textContent = "Positivo";
+        saldoBadgeEl.style.borderColor = "rgba(57,217,138,0.35)";
+        saldoBadgeEl.style.background = "rgba(57,217,138,0.12)";
+      }else if(saldo < 0){
+        sumSaldoEl.style.color = "var(--danger)";
+        saldoBadgeEl.textContent = "Negativo";
+        saldoBadgeEl.style.borderColor = "rgba(255,107,107,0.35)";
+        saldoBadgeEl.style.background = "rgba(255,107,107,0.12)";
+      }else{
+        sumSaldoEl.style.color = "var(--text)";
+        saldoBadgeEl.textContent = "Neutro";
+        saldoBadgeEl.style.borderColor = "rgba(255,255,255,0.14)";
+        saldoBadgeEl.style.background = "rgba(255,255,255,0.06)";
+      }
+    }
+
+    function renderTabela(){
+      // Ordena para exibir (desc)
+      const sorted = [...lancamentos].sort(compareByDateDesc);
+
+      tbody.innerHTML = "";
+
+      if(sorted.length === 0){
+        emptyState.style.display = "block";
+        totalItens.textContent = "0 itens";
+        return;
+      }
+
+      emptyState.style.display = "none";
+      totalItens.textContent = `${sorted.length} item(ns)`;
+
+      for(const l of sorted){
+        const tr = document.createElement("tr");
+
+        const tdData = document.createElement("td");
+        tdData.textContent = l.data;
+
+        const tdDesc = document.createElement("td");
+        tdDesc.textContent = l.descricao;
+
+        const tdTipo = document.createElement("td");
+        const pill = document.createElement("span");
+        pill.className = "pill " + (l.categoria === "receita" ? "receita" : "despesa");
+        pill.innerHTML = `<span class="dot" aria-hidden="true"></span>${l.categoria === "receita" ? "Receita" : "Despesa"}`;
+        tdTipo.appendChild(pill);
+
+        const tdCat = document.createElement("td");
+        // Mantém simples: Categoria = receita/despesa (como no dropdown do requisito)
+        tdCat.textContent = l.categoria === "receita" ? "Entrada" : "Saída";
+
+        const tdValor = document.createElement("td");
+        tdValor.className = "money";
+        tdValor.textContent = formatBRL(l.valor);
+
+        const tdAcoes = document.createElement("td");
+        const btnDel = document.createElement("button");
+        btnDel.type = "button";
+        btnDel.className = "btn-danger";
+        btnDel.textContent = "Excluir";
+        btnDel.addEventListener("click", () => {
+          const ok = confirm("Excluir este lançamento?");
+          if(!ok) return;
+
+          lancamentos = lancamentos.filter(x => x.id !== l.id);
+          setLancamentos(lancamentos);
+          salvarERecalcular();
+          flashMsg("Lançamento excluído.", "ok");
+        });
+
+        tdAcoes.appendChild(btnDel);
+
+        tr.appendChild(tdData);
+        tr.appendChild(tdDesc);
+        tr.appendChild(tdTipo);
+        tr.appendChild(tdCat);
+        tr.appendChild(tdValor);
+        tr.appendChild(tdAcoes);
+
+        tbody.appendChild(tr);
+      }
+    }
+
+    function flashMsg(text, type){
+      // type pode ser "ok" ou "warn" (opcional)
+      formMsg.style.display = "block";
+      formMsg.textContent = text;
+
+      if(type === "ok"){
+        formMsg.style.borderColor = "rgba(57,217,138,0.35)";
+        formMsg.style.background = "rgba(57,217,138,0.10)";
+      }else{
+        formMsg.style.borderColor = "rgba(255,209,102,0.4)";
+        formMsg.style.background = "rgba(255,209,102,0.10)";
+      }
+
+      clearTimeout(window.__msgTimer);
+      window.__msgTimer = setTimeout(() => {
+        formMsg.style.display = "none";
+      }, 2200);
+    }
+
+    // -------------------------
+    // Eventos
+    // -------------------------
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const descricao = (descEl.value || "").trim();
+      const valor = parseValorInput(valorEl.value);
+      const categoria = categoriaEl.value;
+      const data = dataEl.value;
+
+      if(!descricao){
+        flashMsg("Informe uma descrição.", "warn");
+        return;
+      }
+      if(!(valor > 0)){
+        flashMsg("Informe um valor maior que zero.", "warn");
+        return;
+      }
+      if(!data){
+        flashMsg("Informe a data.", "warn");
+        return;
+      }
+      if(categoria !== "receita" && categoria !== "despesa"){
+        flashMsg("Categoria inválida.", "warn");
+        return;
+      }
+
+      const novo = {
+        id: uid(),
+        descricao,
+        valor,
+        categoria,
+        data
+      };
+
+      lancamentos.push(novo);
+      setLancamentos(lancamentos);
+
+      // Limpa campos (mantém data/ categoria para facilitar)
+      descEl.value = "";
+      valorEl.value = "";
+      categoriaEl.value = "receita"; // opcional: volta para receita (didático)
+      dataEl.value = hojeISO();
+
+      salvarERecalcular();
+      flashMsg("Lançamento adicionado com sucesso!", "ok");
+    });
+
+    btnExportar.addEventListener("click", () => {
+      const sorted = [...lancamentos].sort(compareByDateDesc);
+
+      // Cabeçalho CSV
+      const headers = ["data", "descricao", "categoria", "valor"];
+      const linhas = [headers.join(",")];
+
+      for(const l of sorted){
+        // Escape simples: se tiver aspas, colocamos entre aspas e duplicamos aspas
+        const esc = (s) => {
+          const str = String(s ?? "");
+          if(/[",\n]/.test(str)){
+            return `"${str.replaceAll('"','""')}"`;
+          }
+          return str;
+        };
+
+        linhas.push([
+          esc(l.data),
+          esc(l.descricao),
+          esc(l.categoria),
+          esc(String(l.valor).replace(".", ","))
+        ].join(","));
+      }
+
+      const blob = new Blob([linhas.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "mei-lancamentos.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+      flashMsg("CSV exportado ✅", "ok");
+    });
+
+    btnLimpar.addEventListener("click", () => {
+      const ok = confirm("Tem certeza? Isso vai apagar todos os lançamentos salvos.");
+      if(!ok) return;
+
+      lancamentos = [];
+      setLancamentos(lancamentos);
+      salvarERecalcular();
+      flashMsg("Todos os lançamentos foram removidos.", "ok");
+    });
+
+    // -------------------------
+    // Inicialização
+    // -------------------------
+    (function init(){
+      // Preenche data com "hoje"
+      dataEl.value = hojeISO();
+
+      // Render inicial
+      lancamentos = getLancamentos();
+      // Ajusta tipo/campos se algum dado antigo vier com formato diferente
+      lancamentos = lancamentos
+        .filter(l => l && l.id && l.data && (l.categoria === "receita" || l.categoria === "despesa"))
+        .map(l => ({
+          id: String(l.id),
+          descricao: String(l.descricao ?? ""),
+          valor: Number(l.valor ?? 0) || 0,
+          categoria: l.categoria,
+          data: String(l.data)
+        }));
+
+      setLancamentos(lancamentos);
+      salvarERecalcular();
+    })();
+  </script>
+</body>
+</html>
